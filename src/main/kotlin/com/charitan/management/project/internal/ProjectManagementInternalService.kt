@@ -1,0 +1,3 @@
+package com.charitan.management.project.internal
+
+internal interface ProjectManagementInternalService

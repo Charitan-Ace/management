@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: "management"
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: "management"
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    producer:
+      group-id: "management"
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+server:
+  port: 0
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+  instance:
+    preferIpAddress: true
