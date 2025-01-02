@@ -14,7 +14,13 @@ class ProjectManagementController(
     suspend fun haltProject(
         @PathVariable id: String,
     ) {
-        println("request received")
         projectManagementService.halt(id)
+    }
+
+    @PostMapping("/approve/{id}")
+    suspend fun approveProject(
+        @PathVariable id: String,
+    ) {
+        projectManagementService.approve(id)
     }
 }
