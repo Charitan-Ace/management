@@ -3,12 +3,17 @@ spring:
     name: "management"
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
       group-id: "management"
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-    producer:
-      group-id: "management"
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    properties:
+      spring:
+        json:
+          trusted:
+            packages: "ace.charitan.*"
+
 server:
   port: 0
 eureka:

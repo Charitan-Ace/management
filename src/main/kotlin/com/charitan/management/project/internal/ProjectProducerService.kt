@@ -1,6 +1,7 @@
 package com.charitan.management.project.internal
 
-import com.charitan.management.project.dto.ProjectHaltDto
+import ace.charitan.common.dto.project.ProjectApproveDto
+import ace.charitan.common.dto.project.ProjectHaltDto
 import kotlinx.coroutines.future.await
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -11,6 +12,7 @@ import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.KafkaAdmin
 import org.springframework.kafka.requestreply.ReplyingKafkaTemplate
 import org.springframework.stereotype.Service
+import java.time.Duration
 
 @Service
 internal class ProjectProducerService(
@@ -22,11 +24,15 @@ internal class ProjectProducerService(
         topic: ProjectProducerTopic,
         data: Any,
     ): ConsumerRecord<String, Any> {
-        val record: ProducerRecord<String, Any> = ProducerRecord(topic.name, data)
-        val request = replyingTemplate.sendAndReceive(record)
+        if (!replyingTemplate.waitForAssignment(Duration.ofSeconds(10))) {
+            error("Template container hasn't been initialize")
+        }
+
+        val record: ProducerRecord<String, Any> = ProducerRecord(topic.topic, data)
+        val request = replyingTemplate.sendAndReceive(record, Duration.ofSeconds(10))
 
         val send = request.sendFuture.await()
-        logger.info("Sent replying future request to $topic, metadata ${send.recordMetadata}")
+        logger.info("Sent replying future request to ${topic.topic}, metadata ${send.recordMetadata}")
 
         val result = request.await()
         logger.info("Request to $topic has been replied, value size ${result.serializedValueSize()}")
@@ -36,21 +42,18 @@ internal class ProjectProducerService(
 
     suspend fun send(projectHaltDto: ProjectHaltDto) = send(ProjectProducerTopic.PROJECT_HALT, projectHaltDto)
 
+    suspend fun send(projectApproveDto: ProjectApproveDto) = send(ProjectProducerTopic.PROJECT_APPROVE, projectApproveDto)
+
     @Bean
-    fun keyTopics() =
+    fun managementTopics() =
         KafkaAdmin.NewTopics(
             *ProjectProducerTopic.entries
                 .map { topic ->
                     TopicBuilder
-                        .name(topic.name)
+                        .name(topic.topic)
                         .partitions(3)
                         .replicas(2)
                         .build()
                 }.toTypedArray(),
-            TopicBuilder
-                .name("replies-container")
-                .partitions(3)
-                .replicas(2)
-                .build(),
         )
 }
