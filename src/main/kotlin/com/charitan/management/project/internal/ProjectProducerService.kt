@@ -9,15 +9,13 @@ import kotlinx.coroutines.future.await
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.requestreply.ReplyingKafkaTemplate
 import org.springframework.stereotype.Service
 import java.time.Duration
 
 @Service
 internal class ProjectProducerService(
-    private val template: KafkaTemplate<Any, Any>,
-    private val replyingTemplate: ReplyingKafkaTemplate<String, Any, Any>,
+    private val template: ReplyingKafkaTemplate<String, Any, Any>,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(this.javaClass)
 
@@ -32,12 +30,12 @@ internal class ProjectProducerService(
         topic: ProjectProducerTopic,
         data: Any,
     ): Any {
-        if (!replyingTemplate.waitForAssignment(Duration.ofSeconds(10))) {
+        if (!template.waitForAssignment(Duration.ofSeconds(10))) {
             error("Template container hasn't been initialize")
         }
 
         val record: ProducerRecord<String, Any> = ProducerRecord(topic.topic, data)
-        val request = replyingTemplate.sendAndReceive(record, Duration.ofSeconds(10))
+        val request = template.sendAndReceive(record, Duration.ofSeconds(10))
 
         val send = request.sendFuture.await()
         logger.info("Sent replying future request to ${topic.topic}, metadata ${send.recordMetadata}")

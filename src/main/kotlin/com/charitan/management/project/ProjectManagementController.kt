@@ -1,7 +1,9 @@
 package com.charitan.management.project
 
+import com.charitan.management.project.dto.ProjectHaltReasonDto
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -13,8 +15,9 @@ class ProjectManagementController(
     @PostMapping("/halt/{id}")
     suspend fun haltProject(
         @PathVariable id: String,
+        @RequestBody dto: ProjectHaltReasonDto,
     ) {
-        projectManagementService.halt(id)
+        projectManagementService.halt(id, dto)
     }
 
     @PostMapping("/approve/{id}")
