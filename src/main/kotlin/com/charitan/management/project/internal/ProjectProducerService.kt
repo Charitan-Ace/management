@@ -1,29 +1,37 @@
 package com.charitan.management.project.internal
 
+import ace.charitan.common.dto.donation.DonationsDto
+import ace.charitan.common.dto.donation.GetDonationsByProjectIdDto
+import ace.charitan.common.dto.email.project.EmailProjectHaltDonorDto
 import ace.charitan.common.dto.project.ProjectApproveDto
 import ace.charitan.common.dto.project.ProjectHaltDto
 import kotlinx.coroutines.future.await
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.context.annotation.Bean
-import org.springframework.kafka.config.TopicBuilder
-import org.springframework.kafka.core.KafkaAdmin
+import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.requestreply.ReplyingKafkaTemplate
 import org.springframework.stereotype.Service
 import java.time.Duration
 
 @Service
 internal class ProjectProducerService(
+    private val template: KafkaTemplate<Any, Any>,
     private val replyingTemplate: ReplyingKafkaTemplate<String, Any, Any>,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(this.javaClass)
 
-    private suspend fun send(
+    private fun send(
         topic: ProjectProducerTopic,
         data: Any,
-    ): ConsumerRecord<String, Any> {
+    ) {
+        template.send(topic.topic, data)
+    }
+
+    private suspend fun sendReplying(
+        topic: ProjectProducerTopic,
+        data: Any,
+    ): Any {
         if (!replyingTemplate.waitForAssignment(Duration.ofSeconds(10))) {
             error("Template container hasn't been initialize")
         }
@@ -37,23 +45,22 @@ internal class ProjectProducerService(
         val result = request.await()
         logger.info("Request to $topic has been replied, value size ${result.serializedValueSize()}")
 
-        return result
+        return result.value()
     }
 
-    suspend fun send(projectHaltDto: ProjectHaltDto) = send(ProjectProducerTopic.PROJECT_HALT, projectHaltDto)
+    suspend fun sendReplying(projectHaltDto: ProjectHaltDto) {
+        // TODO: check status
+        sendReplying(ProjectProducerTopic.PROJECT_HALT, projectHaltDto)
+    }
 
-    suspend fun send(projectApproveDto: ProjectApproveDto) = send(ProjectProducerTopic.PROJECT_APPROVE, projectApproveDto)
+    suspend fun sendReplying(projectApproveDto: ProjectApproveDto) = sendReplying(ProjectProducerTopic.PROJECT_APPROVE, projectApproveDto)
 
-    @Bean
-    fun managementTopics() =
-        KafkaAdmin.NewTopics(
-            *ProjectProducerTopic.entries
-                .map { topic ->
-                    TopicBuilder
-                        .name(topic.topic)
-                        .partitions(3)
-                        .replicas(2)
-                        .build()
-                }.toTypedArray(),
-        )
+    suspend fun sendReplying(getDonationsByProjectIdDto: GetDonationsByProjectIdDto) =
+        sendReplying(ProjectProducerTopic.DONATION_GET_BY_PROJECT, getDonationsByProjectIdDto) as DonationsDto
+
+    suspend fun send(emailProjectHaltDonorDto: EmailProjectHaltDonorDto) =
+        send(ProjectProducerTopic.EMAIL_PROJECT_HALT_DONOR, emailProjectHaltDonorDto)
+
+    suspend fun send(emailProjectHaltDonorDtos: List<EmailProjectHaltDonorDto>) =
+        send(ProjectProducerTopic.EMAIL_PROJECT_HALT_DONOR, emailProjectHaltDonorDtos)
 }
