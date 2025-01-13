@@ -1,6 +1,6 @@
 package com.charitan.management.project
 
-import ace.charitan.common.dto.donation.DonationsDto
+import ace.charitan.common.dto.payment.CancelHaltedProjectSubscriptionResponseDto
 import com.charitan.management.project.dto.ProjectHaltReasonDto
 
 interface ProjectManagementExternalService {
@@ -11,5 +11,5 @@ interface ProjectManagementExternalService {
 
     suspend fun approve(projectId: String)
 
-    suspend fun getDonationsByProjectId(projectId: String): DonationsDto
+    suspend fun getDonationsByProjectId(projectId: String): CancelHaltedProjectSubscriptionResponseDto
 }

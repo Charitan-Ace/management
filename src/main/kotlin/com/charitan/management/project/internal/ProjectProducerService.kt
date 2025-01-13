@@ -54,14 +54,16 @@ internal class ProjectProducerService(
     suspend fun sendReplying(projectHaltDto: ProjectHaltDto) =
         sendReplying(ProjectProducerTopic.PROJECT_HALT, projectHaltDto) as ExternalProjectDto
 
-
     suspend fun sendReplying(projectApproveDto: ProjectApproveDto) = sendReplying(ProjectProducerTopic.PROJECT_APPROVE, projectApproveDto)
 
     suspend fun sendReplying(getDonationsByProjectIdDto: GetDonationsByProjectIdDto) =
         sendReplying(ProjectProducerTopic.DONATION_GET_BY_PROJECT, getDonationsByProjectIdDto) as DonationsDto
 
     suspend fun sendReplying(cancelHaltedProjectSubscriptionRequestDto: CancelHaltedProjectSubscriptionRequestDto) =
-        sendReplying(ProjectProducerTopic.PAYMENT_CANCEL_HALTED_PROJECT_SUBSCRIPTIONS, cancelHaltedProjectSubscriptionRequestDto) as CancelHaltedProjectSubscriptionResponseDto
+        sendReplying(
+            ProjectProducerTopic.PAYMENT_CANCEL_HALTED_PROJECT_SUBSCRIPTIONS,
+            cancelHaltedProjectSubscriptionRequestDto,
+        ) as CancelHaltedProjectSubscriptionResponseDto
 
     suspend fun send(emailProjectHaltDonorDto: EmailProjectHaltDonorDto) =
         send(ProjectProducerTopic.EMAIL_PROJECT_HALT_DONOR, emailProjectHaltDonorDto)

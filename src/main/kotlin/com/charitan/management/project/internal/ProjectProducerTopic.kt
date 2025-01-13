@@ -11,5 +11,5 @@ internal enum class ProjectProducerTopic(
     EMAIL_PROJECT_APPROVE("email.project.approve"),
     DONATION_GET_BY_PROJECT("donation.get.projectId"),
     NOTIFICATION_HALTED_PROJECT("notification.project.halt.donor"),
-    PAYMENT_CANCEL_HALTED_PROJECT_SUBSCRIPTIONS("payment.halt-project-subscriptions")
+    PAYMENT_CANCEL_HALTED_PROJECT_SUBSCRIPTIONS("payment.halt-project-subscriptions"),
 }

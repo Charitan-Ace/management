@@ -21,7 +21,8 @@ class ProjectKafkaTemplate {
     fun repliesContainer(
         containerFactory: ConcurrentKafkaListenerContainerFactory<String, Any>,
     ): ConcurrentMessageListenerContainer<String, Any> =
-            containerFactory.createContainer(
+        containerFactory
+            .createContainer(
                 "project.management.replies",
             ).apply {
                 containerProperties.setGroupId("management-service")
