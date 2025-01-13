@@ -1,7 +1,10 @@
 package com.charitan.management.project.internal
 
 import ace.charitan.common.dto.donation.GetDonationsByProjectIdDto
+import ace.charitan.common.dto.email.project.EmailProjectHaltCharityDto
 import ace.charitan.common.dto.email.project.EmailProjectHaltDonorDto
+import ace.charitan.common.dto.notification.payment.HaltedProjectDonorNotificationRequestDto
+import ace.charitan.common.dto.payment.CancelHaltedProjectSubscriptionRequestDto
 import ace.charitan.common.dto.project.ProjectApproveDto
 import ace.charitan.common.dto.project.ProjectHaltDto
 import com.charitan.management.project.ProjectManagementExternalService
@@ -17,26 +20,33 @@ internal class ProjectManagementServiceImpl(
         projectId: String,
         reasonDto: ProjectHaltReasonDto,
     ) {
-        producerService.sendReplying(ProjectHaltDto(projectId, reasonDto.charity, reasonDto.donor))
+
+        val project = producerService.sendReplying(ProjectHaltDto(projectId, reasonDto.charity, reasonDto.donor))
         val donations = getDonationsByProjectId(projectId)
+
 
         producerService.send(
             donations.donations.map { donation ->
                 EmailProjectHaltDonorDto(
                     donation.donorId,
                     "Donation cancellation",
-                    "Your donation has been cancelled. Reason: ${donation.message}",
+                    "Your monthly donation to ${project.title} has been cancelled. Reason: ${reasonDto.donor}",
                 )
-                // TODO: add notification
             },
-        )
 
-        // TODO: add charity email
+        )
+        producerService.send(HaltedProjectDonorNotificationRequestDto(
+            donations.donations.map { it.donorId }, project
+        ))
+
+        producerService.send(EmailProjectHaltCharityDto(project.charityId, "Project Halted", "Your project ${project.title} has been halted. Reason: ${reasonDto.charity}"))
+
     }
 
     override suspend fun approve(projectId: String) {
         val response = producerService.sendReplying(ProjectApproveDto(projectId))
     }
 
-    override suspend fun getDonationsByProjectId(projectId: String) = producerService.sendReplying(GetDonationsByProjectIdDto(projectId))
+    override suspend fun getDonationsByProjectId(projectId: String) = producerService.sendReplying(
+        CancelHaltedProjectSubscriptionRequestDto(projectId))
 }

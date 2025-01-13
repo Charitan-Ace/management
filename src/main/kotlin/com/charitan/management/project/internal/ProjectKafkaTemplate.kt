@@ -20,15 +20,13 @@ class ProjectKafkaTemplate {
     @Bean
     fun repliesContainer(
         containerFactory: ConcurrentKafkaListenerContainerFactory<String, Any>,
-    ): ConcurrentMessageListenerContainer<String, Any> {
-        val repliesContainer =
+    ): ConcurrentMessageListenerContainer<String, Any> =
             containerFactory.createContainer(
                 "project.management.replies",
-            )
-        repliesContainer.containerProperties.setGroupId("management-service")
-        repliesContainer.isAutoStartup = true
-        return repliesContainer
-    }
+            ).apply {
+                containerProperties.setGroupId("management-service")
+                isAutoStartup = true
+            }
 
     @Bean
     fun repliesTopics() =

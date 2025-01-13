@@ -2,7 +2,12 @@ package com.charitan.management.project.internal
 
 import ace.charitan.common.dto.donation.DonationsDto
 import ace.charitan.common.dto.donation.GetDonationsByProjectIdDto
+import ace.charitan.common.dto.email.project.EmailProjectHaltCharityDto
 import ace.charitan.common.dto.email.project.EmailProjectHaltDonorDto
+import ace.charitan.common.dto.notification.payment.HaltedProjectDonorNotificationRequestDto
+import ace.charitan.common.dto.payment.CancelHaltedProjectSubscriptionRequestDto
+import ace.charitan.common.dto.payment.CancelHaltedProjectSubscriptionResponseDto
+import ace.charitan.common.dto.project.ExternalProjectDto
 import ace.charitan.common.dto.project.ProjectApproveDto
 import ace.charitan.common.dto.project.ProjectHaltDto
 import kotlinx.coroutines.future.await
@@ -46,19 +51,27 @@ internal class ProjectProducerService(
         return result.value()
     }
 
-    suspend fun sendReplying(projectHaltDto: ProjectHaltDto) {
-        // TODO: check status
-        sendReplying(ProjectProducerTopic.PROJECT_HALT, projectHaltDto)
-    }
+    suspend fun sendReplying(projectHaltDto: ProjectHaltDto) =
+        sendReplying(ProjectProducerTopic.PROJECT_HALT, projectHaltDto) as ExternalProjectDto
+
 
     suspend fun sendReplying(projectApproveDto: ProjectApproveDto) = sendReplying(ProjectProducerTopic.PROJECT_APPROVE, projectApproveDto)
 
     suspend fun sendReplying(getDonationsByProjectIdDto: GetDonationsByProjectIdDto) =
         sendReplying(ProjectProducerTopic.DONATION_GET_BY_PROJECT, getDonationsByProjectIdDto) as DonationsDto
 
+    suspend fun sendReplying(cancelHaltedProjectSubscriptionRequestDto: CancelHaltedProjectSubscriptionRequestDto) =
+        sendReplying(ProjectProducerTopic.PAYMENT_CANCEL_HALTED_PROJECT_SUBSCRIPTIONS, cancelHaltedProjectSubscriptionRequestDto) as CancelHaltedProjectSubscriptionResponseDto
+
     suspend fun send(emailProjectHaltDonorDto: EmailProjectHaltDonorDto) =
         send(ProjectProducerTopic.EMAIL_PROJECT_HALT_DONOR, emailProjectHaltDonorDto)
 
+    suspend fun send(emailProjectHaltCharityDto: EmailProjectHaltCharityDto) =
+        send(ProjectProducerTopic.EMAIL_PROJECT_HALT_CHARITY, emailProjectHaltCharityDto)
+
     suspend fun send(emailProjectHaltDonorDtos: List<EmailProjectHaltDonorDto>) =
         send(ProjectProducerTopic.EMAIL_PROJECT_HALT_DONOR, emailProjectHaltDonorDtos)
+
+    suspend fun send(haltedProjectDonorNotificationRequestDto: HaltedProjectDonorNotificationRequestDto) =
+        send(ProjectProducerTopic.NOTIFICATION_HALTED_PROJECT, haltedProjectDonorNotificationRequestDto)
 }
