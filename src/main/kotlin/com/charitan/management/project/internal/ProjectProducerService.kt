@@ -1,7 +1,5 @@
 package com.charitan.management.project.internal
 
-import ace.charitan.common.dto.donation.DonationsDto
-import ace.charitan.common.dto.donation.GetDonationsByProjectIdDto
 import ace.charitan.common.dto.email.project.EmailProjectHaltCharityDto
 import ace.charitan.common.dto.email.project.EmailProjectHaltDonorDto
 import ace.charitan.common.dto.notification.payment.HaltedProjectDonorNotificationRequestDto
@@ -28,6 +26,7 @@ internal class ProjectProducerService(
         topic: ProjectProducerTopic,
         data: Any,
     ) {
+        logger.info("Sent message to ${topic.topic} with data $data (${data.javaClass})")
         template.send(topic.topic, data)
     }
 
@@ -56,9 +55,6 @@ internal class ProjectProducerService(
 
     suspend fun sendReplying(projectApproveDto: ProjectApproveDto) = sendReplying(ProjectProducerTopic.PROJECT_APPROVE, projectApproveDto)
 
-    suspend fun sendReplying(getDonationsByProjectIdDto: GetDonationsByProjectIdDto) =
-        sendReplying(ProjectProducerTopic.DONATION_GET_BY_PROJECT, getDonationsByProjectIdDto) as DonationsDto
-
     suspend fun sendReplying(cancelHaltedProjectSubscriptionRequestDto: CancelHaltedProjectSubscriptionRequestDto) =
         sendReplying(
             ProjectProducerTopic.PAYMENT_CANCEL_HALTED_PROJECT_SUBSCRIPTIONS,
@@ -70,9 +66,6 @@ internal class ProjectProducerService(
 
     suspend fun send(emailProjectHaltCharityDto: EmailProjectHaltCharityDto) =
         send(ProjectProducerTopic.EMAIL_PROJECT_HALT_CHARITY, emailProjectHaltCharityDto)
-
-    suspend fun send(emailProjectHaltDonorDtos: List<EmailProjectHaltDonorDto>) =
-        send(ProjectProducerTopic.EMAIL_PROJECT_HALT_DONOR, emailProjectHaltDonorDtos)
 
     suspend fun send(haltedProjectDonorNotificationRequestDto: HaltedProjectDonorNotificationRequestDto) =
         send(ProjectProducerTopic.NOTIFICATION_HALTED_PROJECT, haltedProjectDonorNotificationRequestDto)

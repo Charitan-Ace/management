@@ -22,15 +22,16 @@ internal class ProjectManagementServiceImpl(
         val project = producerService.sendReplying(ProjectHaltDto(projectId, reasonDto.charity, reasonDto.donor))
         val donations = getDonationsByProjectId(projectId)
 
-        producerService.send(
-            donations.donorIds.map { donation ->
+        donations.donorIds.forEach { donation ->
+            producerService.send(
                 EmailProjectHaltDonorDto(
                     donation,
                     "Donation cancellation",
                     "Your monthly donation to ${project.title} has been cancelled. Reason: ${reasonDto.donor}",
-                )
-            },
-        )
+                ),
+            )
+        }
+
         producerService.send(
             HaltedProjectDonorNotificationRequestDto(
                 donations.donorIds,
